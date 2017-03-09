@@ -21,6 +21,8 @@ knitr::opts_chunk$set(echo = TRUE, comment = "#>")
 
 # Overview
 
+Take the [datacamp course on joining data](https://www.datacamp.com/courses/joining-data-in-r-with-dplyr) to learn the join verbs.
+
 You will analyze some data in the [`nihexporter`](https://github.com/jayhesselberth/nihexporter) package to answer some questions. The questions will cover methods in `dplyr` including two-table verbs.
 
 First you need to install the `nihexporter` package (and `devtools`, if you don't have it already).
