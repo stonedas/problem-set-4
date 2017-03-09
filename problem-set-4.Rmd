@@ -1,0 +1,106 @@
+---
+title: "Problem Set 4"
+author: "Your Name Here"
+date: "3/9/2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = "#>")
+```
+
+# Submission
+
+1. Fork this repository to your own account
+1. Make changes to the `README.Rmd` file (including the author field above).
+1. Knit the file to HTML format
+1. Publish HTML on Rpubs (you will need to sign up for the free account) and *add the link below*.
+1. Submit a PR with your answers.
+
+*Link to Rpubs document:* XXX
+
+# Overview
+
+You will analyze some data in the [`nihexporter`](https://github.com/jayhesselberth/nihexporter) package to answer some questions. The questions will cover methods in `dplyr` including two-table verbs.
+
+First you need to install the `nihexporter` package (and `devtools`, if you don't have it already).
+
+```r
+# install.packages('devtools')
+devtools::install_github("jayhesselberth/nihexporter")
+```
+
+Read the [Overview vignette](http://jayhesselberth.github.io/nihexporter/articles/nihexporter.html) to learn the structure of the pacakge. Take a look at two tables from the package:
+
+```{r overview}
+library(nihexporter)
+library(tidyverse)
+library(broom)
+
+projects
+project_io
+```
+
+# Problems
+
+## Problem 1
+
+The `projects` and `project_io` tables have the `r intersect(names(projects), names(project_io))` column in common. Use this column to perform a `left_join` and identify the most expensive project for each institute. Project institutes are in the `projects` table, whereas total project costs are available in the `project_io` table. Note you will have to use the `arrange` and `slice` verbs from `dplyr`.
+
+```{r problem_1, eval=FALSE}
+... %>%
+  left_join(...) %>%
+  arrange(...) %>%
+  slice(...)
+```
+
+## Problem 2
+
+Create a plot that describes the change in output (number of publications) for the most expensive grant from the above list. Note that you cannot use `n.pubs` for this, as that is an aggregate count over time. You need a tbl of following structure, which you can then use to calculate the number of publications each year (hint: use `n()` in a `summarize` statement:
+
+```{r p2_tbl}
+projects %>%
+  head() %>%
+  left_join(publinks) %>%
+  left_join(publications) %>%
+  select(project.num, fiscal.year, fy.cost, pmid) %>%
+  na.omit()
+```
+
+```{r problem_2}
+```
+
+## Problem 3
+
+Use the `projects` and `clinical_studies` table to calculate how many clinical studies have been started by projects from each institute.
+
+```{r problem_3}
+```
+
+## Problem 4
+
+Calculate correlations between `total.cost` and `n.pubs` for each institute. You will need to `join` the `projects` and `project_io` tables to link `institute` with `total.cost` and `n.pubs`. You will then need to use `group_by` and `do` from `dplyr` and `tidy` from `broom` to calculate correlations.
+
+```{r problem_2, eval=FALSE}
+tab %>%
+  group_by(...) %>%
+  do(tidy(cor(..., ...)))
+```
+
+## Problem 5 (extra credit)
+
+Correlate [`rcr`](https://icite.od.nih.gov/) values from the `publications` table to one of:
+
+- total cost (overall for NIH, or by institute)
+- budget mechanism (e.g., RFA, PAR, etc.)
+- type of grant (e.g. R01, P01, R21, etc.). 
+
+```{r extra_credit}
+```
+
+## Problem 6 (extra extra credit)
+
+Use [`gganimate`](https://github.com/dgrtwo/gganimate) to illustrate the change in cost of R01s for a few institutes over time.
+
+```{r extra_extra_credit}
+```
