@@ -1,6 +1,6 @@
 ---
 title: "Problem Set 4"
-author: "Your Name Here"
+author: "Sarah Stonedahl"
 date: "3/9/2017"
 output: html_document
 ---
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE, comment = "#>")
 1. Publish HTML on Rpubs (you will need to sign up for the free account) and *add the link below*.
 1. Submit a PR with your answers.
 
-*Link to Rpubs document:* XXX
+*Link to Rpubs document:* http://rpubs.com/stonedas/268933
 
 # Overview
 
@@ -38,9 +38,6 @@ Read the [Overview vignette](http://jayhesselberth.github.io/nihexporter/article
 library(nihexporter)
 library(tidyverse)
 library(broom)
-
-projects
-project_io
 ```
 
 # Problems
@@ -50,10 +47,12 @@ project_io
 The `projects` and `project_io` tables have the `r intersect(names(projects), names(project_io))` column in common. Use this column to perform a `left_join` and identify the most expensive project for each institute. Project institutes are in the `projects` table, whereas total project costs are available in the `project_io` table. Note you will have to use the `arrange` and `slice` verbs from `dplyr`.
 
 ```{r problem_1, eval=FALSE}
-... %>%
-  left_join(...) %>%
-  arrange(...) %>%
-  slice(...)
+
+left_join(project_io, projects, by = "project.num") %>% arrange(desc(total.cost)) %>% group_by(institute) %>% slice(1) -> most_expensive_projects
+
+most_expensive_projects %>% arrange(desc(total.cost)) -> ordered_most_expensive_projects
+
+ordered_most_expensive_projects
 ```
 
 ## Problem 2
@@ -61,15 +60,19 @@ The `projects` and `project_io` tables have the `r intersect(names(projects), na
 Create a plot that describes the change in output (number of publications) for the most expensive grant from the above list. Note that you cannot use `n.pubs` for this, as that is an aggregate count over time. You need a tbl of following structure, which you can then use to calculate the number of publications each year (hint: use `n()` in a `summarize` statement:
 
 ```{r p2_tbl}
-projects %>%
-  head() %>%
-  left_join(publinks) %>%
-  left_join(publications) %>%
-  select(project.num, fiscal.year, fy.cost, pmid) %>%
-  na.omit()
+left_join(project_io, projects, by = "project.num") %>% arrange(desc(total.cost)) %>% group_by(institute) %>% slice(1) -> most_expensive_projects
+
+most_expensive_projects %>% arrange(desc(total.cost)) -> ordered_most_expensive_projects
+
+ordered_most_expensive_projects %>% head(1) %>% left_join(publinks) %>% left_join(publications) %>% select(project.num, pub.year, fy.cost, total.cost, pmid) %>% na.omit() %>% select(project.num, institute, total.cost, pub.year, pmid) %>% group_by(project.num, institute, total.cost, pub.year) %>% summarize(total.pubs= n()) %>% na.omit() -> p2_tbl
+
+p2_tbl
 ```
 
-```{r problem_2}
+```{r problem 2}
+ggplot(p2_tbl, aes(pub.year, total.pubs)) + geom_col(fill = "darkblue") + xlab('Publication Year') + ylab('Total Publications') -> p2_plot 
+
+p2_plot
 ```
 
 ## Problem 3
@@ -77,16 +80,19 @@ projects %>%
 Use the `projects` and `clinical_studies` table to calculate how many clinical studies have been started by projects from each institute.
 
 ```{r problem_3}
+select(projects, institute, project.num) %>% left_join(clinical_studies) %>% na.omit() %>% select(institute, project.num, trial.id) %>% group_by(institute, project.num) %>% summarise(total.studies = n()) %>% arrange(desc(total.studies)) -> p3_tbl
+
+p3_tbl
 ```
 
 ## Problem 4
 
 Calculate correlations between `total.cost` and `n.pubs` for each institute. You will need to `join` the `projects` and `project_io` tables to link `institute` with `total.cost` and `n.pubs`. You will then need to use `group_by` and `do` from `dplyr` and `tidy` from `broom` to calculate correlations.
 
-```{r problem_2, eval=FALSE}
-tab %>%
-  group_by(...) %>%
-  do(tidy(cor(..., ...)))
+```{r problem_4, eval=FALSE}
+projects %>% left_join(project_io) %>% select(institute, total.cost, n.pubs) %>% na.omit() %>% group_by(institute) %>% summarize(total_cost = sum(total.cost), num_pubs = sum(n.pubs)) %>% do(tidy(cor(.$total_cost, .$num_pubs))) -> correlation_cost_pubs
+
+correlation_cost_pubs
 ```
 
 ## Problem 5 (extra credit)
